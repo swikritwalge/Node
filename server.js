@@ -5,10 +5,19 @@ const fs = require("fs");
 app.use(cors());
 
 app.use(express.json());
+
 app.get("/", (req, res) => {
 fs.writeFile("data.txt", "Hello Swikrit 👋", (err) => {
   if (err) return console.log(err);
   console.log("File created!");
+});
+app.get("/read", async (req, res) => {
+  try {
+    const data = await fs.readFile("data.txt", "utf8");
+    res.send(data);
+  } catch (err) {
+    res.status(500).send("Error reading file");
+  }
 });
 
   res.send("Backend is running 🚀");
