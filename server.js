@@ -4,8 +4,12 @@ const cors = require("cors");
 app.use(cors());
 
 app.use(express.json());
-
 app.get("/", (req, res) => {
+fs.writeFile("data.txt", "Hello Swikrit 👋", (err) => {
+  if (err) return console.log(err);
+  console.log("File created!");
+});
+
   res.send("Backend is running 🚀");
 });
 
