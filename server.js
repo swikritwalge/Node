@@ -8,10 +8,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/', (req, res) => {
-  res.json({ 
-    message: "✅ Backend is running on Render!", 
-    status: "success" 
-  });
+res.send("hello");
 });
 
 app.get('/api/health', (req, res) => {
