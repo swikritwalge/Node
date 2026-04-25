@@ -1,31 +1,54 @@
 const express = require("express");
-const app = express();
-const cors = require("cors");
+const multer = require("multer");
+const cloudinary = require("cloudinary").v2;
 const fs = require("fs");
+const cors = require("cors");
+
+const app = express();
 app.use(cors());
 
-app.use(express.json());
-
-app.get("/", (req, res) => {
-fs.writeFile("data.txt", "Hello Swikrit 👋", (err) => {
-  if (err) return console.log(err);
-  console.log("File created!");
+// ✅ Cloudinary config (use ENV variables on Render)
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.API_KEY,
+  api_secret: process.env.API_SECRET
 });
-app.get("/read", async (req, res) => {
+
+// ✅ Multer (temporary storage)
+const upload = multer({ dest: "uploads/" });
+
+// 🔥 Upload route
+app.post("/upload", upload.single("file"), async (req, res) => {
   try {
-    const data = await fs.readFile("data.txt", "utf8");
-    res.send(data);
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    // Upload to Cloudinary
+    const result = await cloudinary.uploader.upload(req.file.path);
+
+    // Delete temp file (important on Render)
+    fs.unlinkSync(req.file.path);
+
+    // Send back URL
+    res.json({
+      message: "Upload successful ✅",
+      url: result.secure_url
+    });
+
   } catch (err) {
-    res.status(500).send("Error reading file");
+    console.error(err);
+    res.status(500).json({ error: "Upload failed ❌" });
   }
 });
 
-  res.send("Backend is running 🚀");
+// simple test route
+app.get("/", (req, res) => {
+  res.send("Server is running 🚀");
 });
 
-app.get("/api/message", (req, res) => {
-  res.json({ message: "Hello from Node backend!" });
+// ✅ Use dynamic port for Render
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
-
-const port = process.env.PORT || 3000;
-app.listen(port, () => console.log("Server running"));
